@@ -1,0 +1,11 @@
+apiVersion: kopf.dev/v1
+kind: limitedpod
+metadata:
+  name: "{name}"
+  labels:
+    somelabel: somevalue
+  annotations:
+    someannotation: somevalue
+spec:
+  name: "{name}"
+  namespace : "{namespace}"
