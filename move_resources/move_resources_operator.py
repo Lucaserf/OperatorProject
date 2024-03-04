@@ -12,7 +12,7 @@ kubernetes.config.load_kube_config()
 apicustom = kubernetes.client.CustomObjectsApi()
 api = pykube.HTTPClient(pykube.KubeConfig.from_env())
 apicore = kubernetes.client.CoreV1Api()
-namespaces_limps = ["limps-ns1","limps-ns2"]
+namespaces_limps = ["limps-ns1","limps-ns2","limps-ns3"]
 
 path = os.path.join(os.path.dirname(__file__), '../limited_pods/cr.yaml')
 tmpl = open(path, 'rt').read()
@@ -100,6 +100,12 @@ def timer_fn(spec,**kwargs):
             name= controlled_resource_name,
             body=kubernetes.client.V1DeleteOptions()
         )
+        # pods = pykube.Pod.objects(api).filter(namespace=pykube.all, selector={'child': 'limitedpods'}, field_selector={'metadata.name': controlled_resource_name})
+        # while len(pods) != 0:
+        #     time.sleep(1)
+        #     pods = pykube.Pod.objects(api).filter(namespace=pykube.all, selector={'child': 'limitedpods'}, field_selector={'metadata.name': controlled_resource_name})
+        # logging.debug(f"{controlled_resource_name} deleted from {controlled_resource_namespace}: {len(pods)} pods left.")
+
         #create the custom resource in the new namespace
         text = tmpl.format(name=controlled_resource_name,namespace = ns_to_move)
         limitpod = yaml.safe_load(text)

@@ -10,7 +10,7 @@ max_cpu = 250
 kubernetes.config.load_kube_config()
 apicustom = kubernetes.client.CustomObjectsApi()
 api = pykube.HTTPClient(pykube.KubeConfig.from_env())
-namespace_limp = "limps-ns2"
+namespace_limp = "limps-ns3"
 
 
 def set_resource_controlled(name, namespace,kind):

@@ -3,7 +3,7 @@ import yaml
 import time
 import kubernetes
 
-n_limpods = 2
+n_limpods = 7
 names = [f'limpod-{i}' for i in range(n_limpods)]
 namespace = "limps-ns1"
 kubernetes.config.load_kube_config()

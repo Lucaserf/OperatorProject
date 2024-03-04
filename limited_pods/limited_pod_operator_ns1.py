@@ -66,7 +66,7 @@ def create_fn(spec,**kwargs):
         name: {spec.get('name', 'default-name')}
         labels: 
           child: 'limitedpods'
-        namespace: 'limps-ns1'
+        namespace: '{namespace_limp}'
       spec:
         containers:
         - name: the-only-one
@@ -140,7 +140,7 @@ def timer_fn(spec,**kwargs):
           name: {spec.get('name', 'default-name')}
           labels: 
             child: 'limitedpods'
-          namespace: 'limps-ns1'
+          namespace: '{namespace_limp}'
         spec:
           containers:
           - name: the-only-one
@@ -177,7 +177,7 @@ def timer_fn(spec,**kwargs):
         name= name,
         body={"status": {"message": f"We are {state} limps","memory": f"{memory}Mi", "cpu": f"{cpu}m", "phase":"Running"}}
       )
-  if not find_pod:
-    create_fn(spec)
+  # if not find_pod:
+  #   create_fn(spec)
       
   set_resource_running(spec.get('name', 'default-name'), namespace_limp, "limitedpods")
