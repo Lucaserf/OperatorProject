@@ -3,9 +3,9 @@ import yaml
 import time
 import kubernetes
 
-n_limpods = 3
+n_limpods = 2
 names = [f'limpod-{i}' for i in range(n_limpods)]
-namespace = "test"
+namespace = "limps-ns1"
 kubernetes.config.load_kube_config()
 api = kubernetes.client.CustomObjectsApi()
 
@@ -15,6 +15,6 @@ for name in names:
     text = tmpl.format(name=name,namespace = namespace)
     limitpod = yaml.safe_load(text)
 
-    api.create_namespaced_custom_object(group="kopf.dev", version="v1", namespace="test", plural="limitedpods", body=limitpod)
+    api.create_namespaced_custom_object(group="kopf.dev", version="v1", namespace=namespace, plural="limitedpods", body=limitpod)
 
     time.sleep(5)

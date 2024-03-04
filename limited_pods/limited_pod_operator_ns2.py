@@ -10,6 +10,7 @@ max_cpu = 250
 kubernetes.config.load_kube_config()
 apicustom = kubernetes.client.CustomObjectsApi()
 api = pykube.HTTPClient(pykube.KubeConfig.from_env())
+namespace_limp = "limps-ns2"
 
 
 def set_resource_controlled(name, namespace,kind):
@@ -36,13 +37,16 @@ def set_resource_running(name, namespace,kind):
 def configure(settings: kopf.OperatorSettings, **_):
     settings.posting.level = logging.DEBUG
     # settings.peering.priority = 100
+    settings.peering.standalone = True
+    #get namespace of this operator
+
 
 
 @kopf.on.create('limitedpods')
 def create_fn(spec,**kwargs):
-  set_resource_controlled(spec.get('name', 'default-name'), "test", "limitedpods")
+  set_resource_controlled(spec.get('name', 'default-name'), namespace_limp, "limitedpods")
 
-  pods = pykube.Pod.objects(api).filter(namespace="test", selector={'child': 'limitedpods'})
+  pods = pykube.Pod.objects(api).filter(namespace=namespace_limp, selector={'child': 'limitedpods'})
   state = len(pods.response['items'])
 
   if state < 1:
@@ -62,7 +66,7 @@ def create_fn(spec,**kwargs):
         name: {spec.get('name', 'default-name')}
         labels: 
           child: 'limitedpods'
-        namespace: 'test'
+        namespace: 'limps-ns1'
       spec:
         containers:
         - name: the-only-one
@@ -91,7 +95,7 @@ def create_fn(spec,**kwargs):
   apicustom.patch_namespaced_custom_object(
         group="kopf.dev",
         version="v1",
-        namespace="test",
+        namespace=namespace_limp,
         plural="limitedpods",
         name= spec.get('name', 'default-name'),
         body={"status": {"message": f"We are {state+1} limps","memory": f"{memory}Mi", "cpu": f"{cpu}m", "phase":"Running"}}
@@ -100,13 +104,13 @@ def create_fn(spec,**kwargs):
 
 @kopf.timer('limitedpods', interval=15, initial_delay=10,field='status.phase', value='Running')
 def timer_fn(spec,**kwargs):
-  set_resource_controlled(spec.get('name', 'default-name'), "test", "limitedpods")
+  set_resource_controlled(spec.get('name', 'default-name'), namespace_limp, "limitedpods")
 
   logging.debug(spec)
   api = pykube.HTTPClient(pykube.KubeConfig.from_env())
   state = 0
   
-  pods = pykube.Pod.objects(api).filter(namespace="test", selector={'child': 'limitedpods'})
+  pods = pykube.Pod.objects(api).filter(namespace=namespace_limp, selector={'child': 'limitedpods'})
   state = len(pods.response['items'])
 
   if state <= 1:
@@ -136,7 +140,7 @@ def timer_fn(spec,**kwargs):
           name: {spec.get('name', 'default-name')}
           labels: 
             child: 'limitedpods'
-          namespace: 'test'
+          namespace: 'limps-ns1'
         spec:
           containers:
           - name: the-only-one
@@ -168,12 +172,12 @@ def timer_fn(spec,**kwargs):
       apicustom.patch_namespaced_custom_object(
         group="kopf.dev",
         version="v1",
-        namespace="test",
+        namespace=namespace_limp,
         plural="limitedpods",
         name= name,
         body={"status": {"message": f"We are {state} limps","memory": f"{memory}Mi", "cpu": f"{cpu}m", "phase":"Running"}}
       )
-  # if not find_pod:
-  #   create_fn(spec)
+  if not find_pod:
+    create_fn(spec)
       
-  set_resource_running(spec.get('name', 'default-name'), "test", "limitedpods")
+  set_resource_running(spec.get('name', 'default-name'), namespace_limp, "limitedpods")
